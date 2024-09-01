@@ -1,0 +1,65 @@
+.container {
+    width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+textarea {
+    width: 100%;
+    height: 250px;
+    margin-bottom: 20px;
+    background-color: black;
+    color: skyblue;
+    border: 2px solid rgb(246, 255, 0);
+    border-radius: 5px;
+    font-size: large;
+}
+
+/* AJUSTE DE SIZE DE AMBOS BOTONES */
+button {
+    font-size: 18px; /* Aumenta el tamaño del texto dentro del botón */
+    padding: 10px 20px; /* Añade relleno para hacer que el botón sea más grande */
+    width: 150px; /* Establece un ancho fijo */
+    border: 3px solid rgb(0, 217, 255);
+    cursor: pointer; /* Cambia el cursor a una mano cuando se pasa por encima */
+}
+
+input {
+    font-size: 18px;
+    width: 170px;
+}
+
+/*====================================*/
+
+.botones{
+    text-align: left;
+}
+
+.output textarea {
+    background-color: #f4f4f4;
+    color: rgb(0, 255, 0);
+    background-color: black;
+    font-size: large;
+    height: 175px;
+}
+
+h3 {
+    font-size: 20px;
+    font-weight: bold; 
+    color: rgb(246, 255, 0);
+    text-align: center; 
+    margin-bottom: 20px; 
+}
+
+body {
+    background-color: black;
+}
+
+.titulo_oakland{
+    font-size: 40px; 
+    font-weight: bold; 
+    color: rgb(246, 255, 0); 
+    text-align: center; 
+    margin-bottom: 20px; 
+
+}

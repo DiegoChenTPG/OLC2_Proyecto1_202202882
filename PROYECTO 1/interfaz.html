@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>OakLand</title>
+        <link rel="stylesheet" href="interfaz.css">
+    </head>
+
+    <body>
+
+        <div class = "botones">
+            <button>Reportes</button>
+            <br></br>
+            <input type="file"/>
+        </div>
+        <div class="container">
+            <h2 class ="titulo_oakland">OakLand</h2>
+
+            <textarea id= "editor" placeholder="Escribe tus comandos aquí..."></textarea>
+            <button id="btnEjecutar">Ejecutar</button>
+            <div class="output">
+                <h3>Consola</h3>
+                <textarea id="salida" readonly></textarea>
+            </div>
+        </div>  
+        <script type="module" src="main.js"></script>
+
+    </body>
+
+</html>
