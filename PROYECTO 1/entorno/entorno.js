@@ -8,14 +8,22 @@ export class Entorno{
         this.padre = padre
     }
 
+    /* 
+    En este caso se cambio a nombres simples como set, get y asignar porque ya no se guardan solo variables
+    si no tambien funciones, clases y luego arreglos 
+    */
 
-    setVariable(nombre, valor){
+    /**
+     * @param {string} nombre
+     * @param {any} valor
+     */
+    set(nombre, valor){
 
         this.valores[nombre] = valor
 
     }
 
-    getVariable(nombre){
+    get(nombre){
 
         const valorActual = this.valores[nombre]
 
@@ -25,7 +33,7 @@ export class Entorno{
         if (valorActual === undefined && this.padre){ // y lo mismo aca con el ===, ya que si hacemos == undefined, el 0 tambien se considera undefined asi que ===
             
             // si no existe en el bloque va a buscar a su padre(el entorno superior por decirlo) y lo devuelve
-            return this.padre.getVariable(nombre)
+            return this.padre.get(nombre)
         }
 
         throw new Error("Variable $",nombre, "no definida")
@@ -33,7 +41,7 @@ export class Entorno{
     }
 
 
-    asignarVariable(nombre, valor){
+    asignar(nombre, valor){
 
         const valorActual = this.valores[nombre]
 
@@ -43,7 +51,7 @@ export class Entorno{
         }
             
         if (valorActual === undefined && this.padre){
-            this.padre.asignarVariable(nombre, valor)
+            this.padre.asignar(nombre, valor)
             return
         }
 

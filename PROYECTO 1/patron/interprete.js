@@ -1,7 +1,11 @@
 import { Entorno } from "../entorno/entorno.js";
+import { FuncionForanea } from "./funciones/foranea.js";
 import { Invocable } from "./funciones/invocable.js";
 import { nativas } from "./funciones/nativas.js";
+import nodos from "./nodos.js";
 import { BreakException, ContinueException, ReturnException } from "./sentencias_transferencia/transferencia.js";
+import { Instancia } from "./structs/instancia.js";
+import { Struct } from "./structs/struct.js";
 import { BaseVisitor } from "./visitor.js";
 
 
@@ -14,7 +18,7 @@ export class InterpreterVisitor extends BaseVisitor{
 
         //funciones nativas
         Object.entries(nativas).forEach(([nombre, funcion]) => {
-            this.entornoActual.setVariable(nombre, funcion)
+            this.entornoActual.set(nombre, funcion)
         })
 
         this.salida = ""
@@ -104,10 +108,12 @@ export class InterpreterVisitor extends BaseVisitor{
 
     visitDeclaracionVariable(node){
         const nombreVariable = node.id
-        const valorVariable = node.exp.accept(this)
+        let valorVariable =  null
+        if (node.exp !== null) {
+            valorVariable = node.exp.accept(this); // Asignar valor si hay expresión
+        }
 
-
-        this.entornoActual.setVariable(nombreVariable, valorVariable)
+        this.entornoActual.set(nombreVariable, valorVariable)
 
     }
 
@@ -117,7 +123,7 @@ export class InterpreterVisitor extends BaseVisitor{
     visitAccesoVariable(node){
 
         const nombreVariable = node.id
-        const valorVariable = this.entornoActual.getVariable(nombreVariable)
+        const valorVariable = this.entornoActual.get(nombreVariable)
         return valorVariable
 
     }
@@ -145,8 +151,8 @@ export class InterpreterVisitor extends BaseVisitor{
 
     visitAsignacion(node) {
         const valorVariableNuevo = node.asignacion.accept(this)
-        this.entornoActual.asignarVariable(node.id, valorVariableNuevo)
-        //return valorVariableNuevo
+        this.entornoActual.asignar(node.id, valorVariableNuevo)
+        return valorVariableNuevo
     }
 
 
@@ -280,6 +286,7 @@ export class InterpreterVisitor extends BaseVisitor{
         }
         throw new ReturnException(valor)
     }
+
     /** 
     * @type {BaseVisitor['visitLlamada']}
     */ 
@@ -297,5 +304,81 @@ export class InterpreterVisitor extends BaseVisitor{
         }
 
         return funcion.invocar(this, argumentos)
+    }
+
+    /** 
+    * @type {BaseVisitor['visitDeclaracionFuncion']}
+    */ 
+    visitDeclaracionFuncion(node){
+        const funcion = new FuncionForanea(node, this.entornoActual)
+        this.entornoActual.set(node.id, funcion)
+    }
+
+    /** 
+    * @type {BaseVisitor['visitDeclaracionStruct']}
+    */
+    visitDeclaracionStruct(node){
+
+        const metodos = {}
+        const atributos = {}
+        node.declaraciones.forEach(dcl => {
+            if (dcl instanceof nodos.DeclaracionFuncion) {
+                metodos[dcl.id] = new FuncionForanea(dcl, this.entornoActual);
+            } else if (dcl instanceof nodos.DeclaracionVariable) {
+                atributos[dcl.id] = dcl.exp
+            }
+        })
+
+
+        const struct = new Struct(node.id, atributos, metodos)
+        this.entornoActual.set(node.id, struct)
+    }
+
+
+    /** 
+    * @type {BaseVisitor['visitInstancia']}
+    */
+    visitInstancia(node){
+        const struct = this.entornoActual.get(node.id)
+
+        const argumentos = node.args.map(arg => arg.accept(this));
+
+        if(!(struct instanceof Struct)){
+            throw new Error("No es posible instanciar algo que no es una clase")
+        }
+
+
+        return struct.invocar(this, argumentos)
+
+    }
+
+    /** 
+    * @type {BaseVisitor['visitGet']}
+    */
+
+    visitGet(node){
+        const instancia = node.objetivo.accept(this)
+
+        if(!(instancia instanceof Instancia)) {
+            throw new Error("No es posible obtener una propiedad de algo que no es una instancia")
+        }
+
+        return instancia.get(node.propiedad)
+    }
+    
+    /** 
+    * @type {BaseVisitor['visitSet']}
+    */
+    visitSet(node){
+        const instancia =  node.objetivo.accept(this)
+
+        if(!(instancia instanceof Instancia)){
+            throw new Error("No es posible asignar una propiedad de algo que no es una instancia")
+        }
+        const valor = node.valor.accept(this)
+
+        instancia.set(node.propiedad, valor)
+
+        return valor
     }
 }

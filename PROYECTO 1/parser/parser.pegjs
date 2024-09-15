@@ -17,7 +17,12 @@
       'break': nodos.Break,
       'continue': nodos.Continue,
       'return': nodos.Return,
-      'llamada': nodos.Llamada
+      'llamada': nodos.Llamada,
+      'declaracionFuncion': nodos.DeclaracionFuncion,
+      'declaracionStruct': nodos.DeclaracionStruct,
+      'instancia': nodos.Instancia,
+      'get': nodos.Get,
+      'set': nodos.Set
     }
     const nodo = new tipos[tipoNodo](propiedades)
     nodo.location = location()
@@ -29,18 +34,29 @@
 programa = _ dcl:Declaracion* _ { return dcl }
 
 Declaracion = dcl:Declaracion_Variable _ ";" _ { return dcl }
+            / dclF:Declaracion_Funcion _ {return dclF} 
+            / dclS: Declaracion_Struct _ {return dclS}
             / stmt:Sentencias _ { return stmt }
 
 
-Declaracion_Variable = "var" _ id:ID _ "=" _ exp:Expresion _ { return crearNodo('declaracionVariable', { id, exp }) }
-                    / Tipo _ ID _ "=" _ Expresion _ 
-                    / Tipo _ id:ID _
+Declaracion_Variable = "var" _ id:ID _ "=" _ exp:Expresion _ { return crearNodo('declaracionVariable', { tipo: null, id, exp }) }
+                    / tipo:Tipo _ id:ID _ exp:("=" _ exp:Expresion {return exp})? _ { return crearNodo('declaracionVariable', { tipo, id, exp: exp || null }) }
 
+
+Declaracion_Funcion = "void" _ id:ID _ "(" _ parametros:Parametros? _ ")" _ bloque:Bloque {return crearNodo('declaracionFuncion', {id, parametros: parametros || [], bloque})}
+
+Parametros = id:ID _ parametros:(","_ ids:ID {return ids})* {return [id, ...parametros]}
+
+
+Declaracion_Struct =  "struct" _ id:ID _ "{" _ declaraciones:Cuerpo_Struct* _ "}" {return crearNodo('declaracionStruct', {id, declaraciones}) }
+
+Cuerpo_Struct = dcl:Declaracion_Variable _ ";" _ {return dcl}
+              / dcl:Declaracion_Funcion _ {return dcl}
 
 
 // AQUI EN LOS STATEMENT IRIAN INSTRUCCIONES (ESTRUCTURAS DE CONTROL) 
 Sentencias = "System.out.println(" _ exp:Expresion _ ")" _ ";" _ { return crearNodo('print', { exp }) }
-    / "{" _ dcls:Declaracion* _ "}" {return crearNodo('bloque', {dcls})}
+    / Bloque
     / "if" _ "(" _ condicion:Expresion _ ")" _ sentenciasTrue:Sentencias sentenciasFalse:(
       _ "else" _ sentenciasFalse:Sentencias {return sentenciasFalse})? {return crearNodo('if', {condicion, sentenciasTrue, sentenciasFalse})}
     / "while" _ "(" _ condicion:Expresion _ ")" _ sentencias:Sentencias {return crearNodo('while', {condicion, sentencias})}
@@ -49,10 +65,28 @@ Sentencias = "System.out.println(" _ exp:Expresion _ ")" _ ";" _ { return crearN
     / "continue" _ ";" {return crearNodo('continue')}
     / "return" _ exp:Expresion? _ ";" {return crearNodo('return', {exp})}
     / exp:Expresion _ ";" { return crearNodo('expresionStmt', { exp }) } //PASAMOS ESTO HASTA ABAJO POR PRECEDENCIA
+
+Bloque = "{" _ dcls:Declaracion* _ "}" {return crearNodo('bloque', {dcls})}
+
 Expresion = Asignacion
 
-Asignacion = id:ID _ "=" _ asignacion:Asignacion {return crearNodo('asignacion', {id, asignacion})}
-          / Or
+
+Asignacion = asignado:Llamada _ "=" _ asignacion:Asignacion
+  {
+
+    if (asignado instanceof nodos.AccesoVariable) {
+      return crearNodo('asignacion', { id: asignado.id, asignacion })
+    }
+
+    if (!(asignado instanceof nodos.Get)) {
+      throw new Error('Solo se pueden asignar valores a propiedades de objetos')
+    }
+
+    return crearNodo('set', {objetivo:asignado.objetivo, propiedad: asignado.propiedad, valor:asignacion})
+  }
+
+/Or
+
 
 Or = izq:And expansion:(
   _ op:"||" _ der:And { return { tipo: op, der } }
@@ -129,14 +163,29 @@ Multiplicacion = izq:Unaria expansion:(
 Unaria = op:("-"/"!") _ num:Unaria { return crearNodo('unaria', { op: op, exp: num }) }
 / Llamada
 
-Llamada = callee:Valor _ params:("(" args: Argumentos? ")" {return args})* {
-  return params.reduce(
-    (callee, args) => {
-      return crearNodo('llamada', {callee, args: args || []})
+
+Llamada = objetivoInicial:Valor _ 
+  operaciones:(
+    ("(" _ args: Argumentos? _ ")" {return {args, tipo: 'funcCall'}}) 
+    / ("." _ id: ID _ {return {id, tipo: 'get'}})
+  )* {
+  const op = operaciones.reduce(
+    (objetivo, args) => {
+
+      const {tipo, id, args:argumentos} = args
+
+      if(tipo === 'funcCall'){
+        return crearNodo('llamada', {callee: objetivo, args: argumentos || [] })
+      } else if( tipo === 'get'){
+        return crearNodo('get', {objetivo, propiedad:id})
+      }
     },
-    callee
+    objetivoInicial
   )
+return op
 }
+
+
 
 Argumentos = arg:Expresion _ args:("," _ exp:Expresion {return exp})* {return [arg, ...args]}
 
@@ -147,14 +196,16 @@ Valor = DECIMAL {return crearNodo('numero', { valor: parseFloat(text()) })}
   / CHAR {return crearNodo('numero', { valor: String(text().slice(1, -1)) /* Se quitan las comillas dobles */})}
   / ("true"/"false") {return crearNodo('numero', { valor: JSON.parse(text()) /* el JSON.parse se usa para convertir los string a su valor bool*/})}
   / "(" _ exp:Expresion _ ")" { return crearNodo('agrupacion', { exp }) }
+  / "new" _ id:ID _ "(" _ argumentos:Argumentos? _ ")" {return crearNodo('instancia', {id, args:argumentos || []})}
   / id:ID { return crearNodo('accesoVariable', { id }) }
 
 
-Tipo = "int"
-      / "float"
-      / "string"
-      / "boolean"
-      / "char"
+
+Tipo = "int" {return 'int'}
+      / "float" {return 'float'}
+      / "string" {return 'string'}
+      / "boolean" {return 'boolean'}
+      / "char" {return 'char'}
 
 DECIMAL =  [0-9]+(.[0-9]+)        
 N_ENTERO = [0-9]+ 
