@@ -14,14 +14,17 @@ export class Instancia{
         this.propiedades = {}
     }
 
-    set(nombre, valor){
-        this.propiedades[nombre] = valor
+    set(nombre, {tipo, valor}){
+        console.log(nombre + " en instancia")
+        console.log(tipo + " en instancia")
+        console.log(valor + " en instancia")
+        this.propiedades[nombre] =  { tipo, valor }
     }
 
     get(nombre){
 
         if(this.propiedades.hasOwnProperty(nombre)){
-            return this.propiedades[nombre]
+            return this.propiedades[nombre].valor
         }
 
         const metodo = this.struct.buscarMetodo(nombre)
@@ -30,4 +33,7 @@ export class Instancia{
         }
         throw new Error("Propiedad no encontrada: " + nombre)
     }
+
+
+
 }

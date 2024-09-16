@@ -144,14 +144,14 @@ export class Numero extends Expresion {
 
     /**
     * @param {Object} options
-    * @param {number} options.valor Valor del numero
+    * @param {any} options.valor Valor del numero
     */
     constructor({ valor }) {
         super();
         
         /**
          * Valor del numero
-         * @type {number}
+         * @type {any}
         */
         this.valor = valor;
 
@@ -171,8 +171,9 @@ export class DeclaracionVariable extends Expresion {
     * @param {Object} options
     * @param {string} options.id Identificador de la variable
  * @param {Expresion | null} options.exp Expresion de la variable, null si no esta inicializada
+ * @param {string} options.tipo  Tipo de variable (int, float, string, boolean, char)
     */
-    constructor({ id, exp }) {
+    constructor({ id, exp, tipo }) {
         super();
         
         /**
@@ -187,6 +188,13 @@ export class DeclaracionVariable extends Expresion {
          * @type {Expresion | null}
         */
         this.exp = exp;
+
+
+        /**
+         *  Tipo de variable (int, float, string, boolean, char)
+         * @type {string}
+        */
+        this.tipo = tipo;
 
     }
 

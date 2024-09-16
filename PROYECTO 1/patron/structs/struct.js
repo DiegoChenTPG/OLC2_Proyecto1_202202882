@@ -55,8 +55,18 @@ export class Struct extends Invocable{
         const nuevaInstancia = new Instancia(this)
 
 
-        Object.entries(this.atributos).forEach(([nombre, valor]) => {
-            nuevaInstancia.set(nombre, valor.accept(interprete))
+        Object.entries(this.atributos).forEach(([nombre, {tipo, valor}]) => {
+
+            if (valor === null || valor === undefined) {
+                //valor = { accept: () => null }; //COMENTADO CUANDO ESTAMOS VIENDO LO DE LOS STRUCTS
+                valor = this.obtenerValorPorDefecto(tipo);
+            } else {
+                valor = valor.accept(interprete)
+            }
+            const tipoAtributo = tipo
+            const valorAtributo = valor
+            //nuevaInstancia.set(nombre, valor.accept(interprete)); // CAMBIO ACA 15/09
+            nuevaInstancia.set(nombre, {tipo: tipoAtributo, valor: valorAtributo})
         })
 
         const constructor = this.buscarMetodo('constructor')
@@ -66,5 +76,26 @@ export class Struct extends Invocable{
 
 
         return nuevaInstancia
+    }
+
+
+    //CAMBIO ACA 15/09
+    /**
+     * @param {string} tipo
+     * @returns {any}
+     */
+    obtenerValorPorDefecto(tipo) {
+        switch (tipo) {
+            case "string":
+                return ""
+            case "int":
+                return 0
+            case "float":
+                return 0
+            case "boolean":
+                return false
+            default:
+                return null;
+        }
     }
 }

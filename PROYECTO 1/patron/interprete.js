@@ -108,12 +108,15 @@ export class InterpreterVisitor extends BaseVisitor{
 
     visitDeclaracionVariable(node){
         const nombreVariable = node.id
+        const tipoVariable = node.tipo
         let valorVariable =  null
+        
         if (node.exp !== null) {
-            valorVariable = node.exp.accept(this); // Asignar valor si hay expresión
+            valorVariable = node.exp.accept(this) // Asignar valor si hay expresión
         }
-
-        this.entornoActual.set(nombreVariable, valorVariable)
+        
+        //this.entornoActual.set(nombreVariable, valorVariable)
+        this.entornoActual.set(nombreVariable, { tipo: tipoVariable, valor: valorVariable })
 
     }
 
@@ -325,20 +328,32 @@ export class InterpreterVisitor extends BaseVisitor{
             if (dcl instanceof nodos.DeclaracionFuncion) {
                 metodos[dcl.id] = new FuncionForanea(dcl, this.entornoActual);
             } else if (dcl instanceof nodos.DeclaracionVariable) {
+                //console.log(dcl.tipo + " imprimiendo dcl.tipo")
+                //console.log(dcl.exp.valor + " imprimiendo el valor de dcl.exp")
+                //console.log(dcl.id + " imprimiendo dcl.id")
                 atributos[dcl.id] = dcl.exp
+                
+                atributos[dcl.id] = {
+                    tipo: dcl.tipo,
+                    valor: dcl.exp
+                }
             }
         })
 
 
         const struct = new Struct(node.id, atributos, metodos)
-        this.entornoActual.set(node.id, struct)
+        //this.entornoActual.set(node.id, struct) //COMENTADO 15/09 CORRIGIENDO STRUCT Y TIPADO
+        this.entornoActual.set(node.id, { tipo: "struct", valor: struct })
     }
 
+    
 
     /** 
     * @type {BaseVisitor['visitInstancia']}
     */
     visitInstancia(node){
+
+        /*
         const struct = this.entornoActual.get(node.id)
 
         const argumentos = node.args.map(arg => arg.accept(this));
@@ -350,6 +365,22 @@ export class InterpreterVisitor extends BaseVisitor{
 
         return struct.invocar(this, argumentos)
 
+        COMENTADO EL 15/09
+        */
+
+        
+        const resultado = this.entornoActual.get(node.id);
+
+        // Asegúrate de que sea un Struct.
+        //console.log("ESTAMOS IMPRIMIENDO RESULTADO.TIPO:" + resultado.tipo)
+        if (resultado === undefined || resultado.tipo !== "struct") {
+            throw new Error("No es posible instanciar algo que no es una clase")
+        }
+        //const struct = this.entornoActual.get(node.id); 
+        const struct = resultado.valor;  // Ahora estamos seguros de que es un Struct
+        const argumentos = node.args.map(arg => arg.accept(this))
+        return struct.invocar(this, argumentos)
+        
     }
 
     /** 
@@ -376,8 +407,9 @@ export class InterpreterVisitor extends BaseVisitor{
             throw new Error("No es posible asignar una propiedad de algo que no es una instancia")
         }
         const valor = node.valor.accept(this)
-
-        instancia.set(node.propiedad, valor)
+        console.log("estamos imprimiendo valor en set del interprete "+ valor.tipo)
+        //instancia.set(node.propiedad, valor)
+        instancia.set(node.propiedad, {tipo: valor.tipo, valor: valor})
 
         return valor
     }

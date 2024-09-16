@@ -39,7 +39,7 @@ Declaracion = dcl:Declaracion_Variable _ ";" _ { return dcl }
             / stmt:Sentencias _ { return stmt }
 
 
-Declaracion_Variable = "var" _ id:ID _ "=" _ exp:Expresion _ { return crearNodo('declaracionVariable', { tipo: null, id, exp }) }
+Declaracion_Variable = "var" _ id:ID _ "=" _ exp:Expresion _ { return crearNodo('declaracionVariable', { tipo: "var", id, exp }) }
                     / tipo:Tipo _ id:ID _ exp:("=" _ exp:Expresion {return exp})? _ { return crearNodo('declaracionVariable', { tipo, id, exp: exp || null }) }
 
 
@@ -206,6 +206,7 @@ Tipo = "int" {return 'int'}
       / "string" {return 'string'}
       / "boolean" {return 'boolean'}
       / "char" {return 'char'}
+      / ID {return 'instance'}
 
 DECIMAL =  [0-9]+(.[0-9]+)        
 N_ENTERO = [0-9]+ 
