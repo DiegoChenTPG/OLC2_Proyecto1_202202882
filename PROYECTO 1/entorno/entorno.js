@@ -1,3 +1,4 @@
+import { Invocable } from "../patron/funciones/invocable.js"
 import { Struct } from "../patron/structs/struct.js"
 
 export class Entorno {
@@ -44,23 +45,24 @@ export class Entorno {
 
 
     get(nombre) {
-        console.log(nombre + " en get")
+        //console.log(nombre + " si pasa aca")
         const valorActual = this.valores[nombre]
-        let valorActualTipo = valorActual.tipo
+        console.log(valorActual)
 
 
-        if(valorActualTipo === "struct") return valorActual
-
-        if (valorActual !== undefined) return valorActual.valor // SI EL VALOR ACTUAL EXISTE LO MANDAMOS
-        // SE USA EL !== undefined, ya que el 0 se considera un false aca y no entraria a la condicion en caso de que una variable tenga 0 como valor
-
+        // REASIGNAMOS DE POSICION LOS IFS, PARA QUE PRIMERA VERIFIQUE SI valorActual es undefined, si no ya hacemos todo lo demas
         if (valorActual === undefined && this.padre) { // y lo mismo aca con el ===, ya que si hacemos == undefined, el 0 tambien se considera undefined asi que ===
 
             // si no existe en el bloque va a buscar a su padre(el entorno superior por decirlo) y lo devuelve
             return this.padre.get(nombre)
         }
 
-        throw new Error("Variable " + nombre + " no definida")
+        if(valorActual.tipo === "struct") return valorActual
+
+        if (valorActual !== undefined) return valorActual.valor // SI EL VALOR ACTUAL EXISTE LO MANDAMOS
+        // SE USA EL !== undefined, ya que el 0 se considera un false aca y no entraria a la condicion en caso de que una variable tenga 0 como valor
+
+        throw new Error("Variable o arreglo" + nombre + " no definida")
 
     }
 
@@ -95,6 +97,67 @@ export class Entorno {
     }
 
 
+    getValorArreglo(nombre, posicion){
+        const valorActual = this.valores[nombre]
+        console.log(valorActual)
+        
+
+        // REASIGNAMOS DE POSICION LOS IFS, PARA QUE PRIMERA VERIFIQUE SI valorActual es undefined, si no ya hacemos todo lo demas
+        if (valorActual === undefined && this.padre) { // y lo mismo aca con el ===, ya que si hacemos == undefined, el 0 tambien se considera undefined asi que ===
+
+            // si no existe en el bloque va a buscar a su padre(el entorno superior por decirlo) y lo devuelve
+            //return this.padre.get(nombre) //POSIBLE CAMBIO se comento el 17/09 para agregar lo de abajo
+            return this.padre.getValorArreglo(nombre, posicion);
+        }
+
+        if (valorActual !== undefined) {
+            console.log(valorActual.valor.length)
+            console.log(posicion)
+
+            if(posicion < 0 || posicion >= valorActual.valor.length){
+                throw new Error("Indice fuera de los limites del arreglo");
+                
+            }
+            return valorActual.valor[posicion]
+        }
+        // SE USA EL !== undefined, ya que el 0 se considera un false aca y no entraria a la condicion en caso de que una variable tenga 0 como valor
+
+        throw new Error("Arreglo " + nombre + " no definido")
+    }
+
+
+    asignarValorArreglo(nombre, posicion, valor){
+        const valorActual = this.valores[nombre]
+
+        if (valorActual !== undefined) {
+
+            //console.log(valorActual.tipo + " en asignar")
+            if (!this.validacionTipo(valorActual.tipo, valor)) {
+                //this.valores[nombre] = { tipo: valorActual.tipo, valor:null }
+                //return
+                throw new Error("Error de tipo: Se esperaba un valor de tipo " + valorActual.tipo + " para el arreglo " + nombre);
+            }
+            
+            if(posicion < 0 || posicion >= valorActual.valor.length){
+                throw new Error("Indice fuera de los limites del arreglo");
+            }
+
+            valorActual.valor[posicion] = valor
+            this.valores[nombre] = {tipo: valorActual.tipo, valor: valorActual.valor}
+            return
+        }
+
+        if (valorActual === undefined && this.padre) {
+            //this.padre.asignar(nombre, valor) 17/09
+            this.padre.asignarValorArreglo(nombre, posicion, valor);
+            return
+        }
+
+
+        throw new Error("Arreglo " + nombre + " no definido")
+    }
+
+
 
     /**
      * @param {string} tipo 
@@ -113,9 +176,29 @@ export class Entorno {
             this.valores[nombre] = { tipo, valor }
             return true
         }
+
+
+        // Verificamos si el tipo es un arreglo
+        const esArreglo = tipo.endsWith("[]");
+        if (esArreglo) {
+            const tipoBase = tipo.slice(0, -2); // Eliminamos los corchetes "[]"
+            
+            if (Array.isArray(valor)) {
+                // Verificamos que cada valor dentro del arreglo sea del tipo correcto
+                for (let val of valor) {
+                    if (!this.validacionTipo(tipoBase, val, nombre)) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                // Si no es un arreglo, puede ser un valor individual extraído de un arreglo
+                // Comparamos el tipo base del arreglo con el valor individual
+                return this.validacionTipo(tipoBase, valor, nombre);
+            }
+        }
         
         
-        //console.log(valor + " en validacion tipo")
         switch (tipo) {
             case "int":
                 return Number.isInteger(valor)
@@ -129,6 +212,8 @@ export class Entorno {
                 return typeof valor === 'string' && valor.length === 1
             case "struct":
                 return valor instanceof Struct
+            case "function":
+                return valor instanceof Invocable
             case "instance":
                 return true
             default:

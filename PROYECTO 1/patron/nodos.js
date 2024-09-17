@@ -144,14 +144,14 @@ export class Numero extends Expresion {
 
     /**
     * @param {Object} options
-    * @param {any} options.valor Valor del numero
+    * @param {number} options.valor Valor del numero
     */
     constructor({ valor }) {
         super();
         
         /**
          * Valor del numero
-         * @type {any}
+         * @type {number}
         */
         this.valor = valor;
 
@@ -739,4 +739,160 @@ export class Set extends Expresion {
     }
 }
     
-export default { Expresion, OperacionBinaria, OperacionUnaria, Agrupacion, Numero, DeclaracionVariable, AccesoVariable, Print, ExpresionStmt, Asignacion, Bloque, If, While, For, Break, Continue, Return, Llamada, DeclaracionFuncion, DeclaracionStruct, Instancia, Get, Set }
+export class DeclaracionArreglo extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {string} options.tipo Tipo del arreglo
+ * @param {string} options.id Identificador del arreglo
+ * @param {Expresion[]} options.valores Valores del arreglo
+    */
+    constructor({ tipo, id, valores }) {
+        super();
+        
+        /**
+         * Tipo del arreglo
+         * @type {string}
+        */
+        this.tipo = tipo;
+
+
+        /**
+         * Identificador del arreglo
+         * @type {string}
+        */
+        this.id = id;
+
+
+        /**
+         * Valores del arreglo
+         * @type {Expresion[]}
+        */
+        this.valores = valores;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitDeclaracionArreglo(this);
+    }
+}
+    
+export class AccesoValorArreglo extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {string} options.id id del arreglo al que accederemos
+ * @param {Expresion} options.posicion Posicion del valor en el arreglo
+    */
+    constructor({ id, posicion }) {
+        super();
+        
+        /**
+         * id del arreglo al que accederemos
+         * @type {string}
+        */
+        this.id = id;
+
+
+        /**
+         * Posicion del valor en el arreglo
+         * @type {Expresion}
+        */
+        this.posicion = posicion;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitAccesoValorArreglo(this);
+    }
+}
+    
+export class AsignacionValorArreglo extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {string} options.id id del arreglo al que accederemos
+ * @param {Expresion} options.posicion Posicion del valor en el arreglo
+ * @param {Expresion} options.asignacion Expresion a asignar en la posicion del arreglo
+    */
+    constructor({ id, posicion, asignacion }) {
+        super();
+        
+        /**
+         * id del arreglo al que accederemos
+         * @type {string}
+        */
+        this.id = id;
+
+
+        /**
+         * Posicion del valor en el arreglo
+         * @type {Expresion}
+        */
+        this.posicion = posicion;
+
+
+        /**
+         * Expresion a asignar en la posicion del arreglo
+         * @type {Expresion}
+        */
+        this.asignacion = asignacion;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitAsignacionValorArreglo(this);
+    }
+}
+    
+export class DeclaracionArregloReservado extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {string} options.tipo Tipo del arreglo
+ * @param {string} options.id Identificador del arreglo
+ * @param {Expresion} options.cantidad cantidad de valores reservados para el arreglo
+    */
+    constructor({ tipo, id, cantidad }) {
+        super();
+        
+        /**
+         * Tipo del arreglo
+         * @type {string}
+        */
+        this.tipo = tipo;
+
+
+        /**
+         * Identificador del arreglo
+         * @type {string}
+        */
+        this.id = id;
+
+
+        /**
+         * cantidad de valores reservados para el arreglo
+         * @type {Expresion}
+        */
+        this.cantidad = cantidad;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitDeclaracionArregloReservado(this);
+    }
+}
+    
+export default { Expresion, OperacionBinaria, OperacionUnaria, Agrupacion, Numero, DeclaracionVariable, AccesoVariable, Print, ExpresionStmt, Asignacion, Bloque, If, While, For, Break, Continue, Return, Llamada, DeclaracionFuncion, DeclaracionStruct, Instancia, Get, Set, DeclaracionArreglo, AccesoValorArreglo, AsignacionValorArreglo, DeclaracionArregloReservado }

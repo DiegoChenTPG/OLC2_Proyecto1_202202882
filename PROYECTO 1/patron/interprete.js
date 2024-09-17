@@ -2,7 +2,7 @@ import { Entorno } from "../entorno/entorno.js";
 import { FuncionForanea } from "./funciones/foranea.js";
 import { Invocable } from "./funciones/invocable.js";
 import { nativas } from "./funciones/nativas.js";
-import nodos from "./nodos.js";
+import nodos, { AccesoVariable, DeclaracionArreglo } from "./nodos.js";
 import { BreakException, ContinueException, ReturnException } from "./sentencias_transferencia/transferencia.js";
 import { Instancia } from "./structs/instancia.js";
 import { Struct } from "./structs/struct.js";
@@ -127,6 +127,8 @@ export class InterpreterVisitor extends BaseVisitor{
 
         const nombreVariable = node.id
         const valorVariable = this.entornoActual.get(nombreVariable)
+
+        console.log(valorVariable)
         return valorVariable
 
     }
@@ -201,12 +203,12 @@ export class InterpreterVisitor extends BaseVisitor{
             this.entornoActual = entornoAnterior
 
             if(error instanceof BreakException){
-                console.log("break")
+                //console.log("break")
                 return
             }
 
             if(error instanceof ContinueException){
-                console.log("break")
+                //console.log("continue")
                 return this.visitWhile(node)
             }
 
@@ -255,7 +257,7 @@ export class InterpreterVisitor extends BaseVisitor{
             this.entornoActual = entornoAnterior
 
             if(error instanceof BreakException){
-                console.log("break")
+                //console.log("break")
                 return
             }
 
@@ -285,7 +287,8 @@ export class InterpreterVisitor extends BaseVisitor{
     visitReturn(node){
         let valor = null
         if(node.exp){
-            valor = node.exp.accept(this)    
+            valor = node.exp.accept(this)   
+            //console.log(valor + "en visit return")
         }
         throw new ReturnException(valor)
     }
@@ -295,8 +298,9 @@ export class InterpreterVisitor extends BaseVisitor{
     */ 
     visitLlamada(node){
         const funcion = node.callee.accept(this)
-
         const argumentos = node.args.map(arg => arg.accept(this))
+        console.log("ESTAMOS EN LLAMADA")
+        console.log(argumentos)
 
         if(!(funcion instanceof Invocable)){
             throw new Error("No es invocable")
@@ -314,7 +318,8 @@ export class InterpreterVisitor extends BaseVisitor{
     */ 
     visitDeclaracionFuncion(node){
         const funcion = new FuncionForanea(node, this.entornoActual)
-        this.entornoActual.set(node.id, funcion)
+        //this.entornoActual.set(node.id, funcion)
+        this.entornoActual.set(node.id, { tipo: "function", valor: funcion })
     }
 
     /** 
@@ -328,9 +333,6 @@ export class InterpreterVisitor extends BaseVisitor{
             if (dcl instanceof nodos.DeclaracionFuncion) {
                 metodos[dcl.id] = new FuncionForanea(dcl, this.entornoActual);
             } else if (dcl instanceof nodos.DeclaracionVariable) {
-                //console.log(dcl.tipo + " imprimiendo dcl.tipo")
-                //console.log(dcl.exp.valor + " imprimiendo el valor de dcl.exp")
-                //console.log(dcl.id + " imprimiendo dcl.id")
                 atributos[dcl.id] = dcl.exp
                 
                 atributos[dcl.id] = {
@@ -372,13 +374,19 @@ export class InterpreterVisitor extends BaseVisitor{
         const resultado = this.entornoActual.get(node.id);
 
         // Asegúrate de que sea un Struct.
-        //console.log("ESTAMOS IMPRIMIENDO RESULTADO.TIPO:" + resultado.tipo)
         if (resultado === undefined || resultado.tipo !== "struct") {
             throw new Error("No es posible instanciar algo que no es una clase")
         }
         //const struct = this.entornoActual.get(node.id); 
         const struct = resultado.valor;  // Ahora estamos seguros de que es un Struct
-        const argumentos = node.args.map(arg => arg.accept(this))
+        //const argumentos = node.args.map(arg => arg.accept(this)) COMENTADO EL 16/09
+
+        const argumentos = node.args.map(arg => ({
+            id: arg.id,
+            valor: arg.valor.accept(this) // Evaluar el valor del argumento
+        }))
+
+
         return struct.invocar(this, argumentos)
         
     }
@@ -412,5 +420,132 @@ export class InterpreterVisitor extends BaseVisitor{
         instancia.set(node.propiedad, {tipo: valor.tipo, valor: valor})
 
         return valor
+    }
+    /** 
+    * @type {BaseVisitor['visitDeclaracionArreglo']}
+    */
+    visitDeclaracionArreglo(node){
+        const nombreArreglo = node.id
+        const tipoArreglo = node.tipo
+        const valoresArreglo = node.valores
+        let auxiliar
+        let valoresSintetizados = []
+        
+        if (valoresArreglo instanceof AccesoVariable) {
+            // por el "bug" hacemos esta validacion para obtener el arreglo desde AccesoVariable
+            auxiliar = this.visitAccesoVariable(valoresArreglo)
+            /* se obtiene al arreglo con un auxiliar, y asignamos valor a valor 
+            porque si solo copiamos, cuando modifiquemos el arreglo original, por alguna razon la copia tambien obtiene esos valores
+            */
+
+            auxiliar.forEach(valores_a => {
+                valoresSintetizados.push(valores_a)
+            });
+
+        }
+    
+        if(Array.isArray(valoresArreglo)){
+            valoresArreglo.forEach(valores => {
+                const valor_agregar = valores.accept(this)
+                if (!this.validarTipoArreglo(tipoArreglo, valor_agregar)) {
+                    throw new Error(`El valor ${valor_agregar} no es del tipo esperado para el arreglo ${nombreArreglo}`);
+                }
+                valoresSintetizados.push(valor_agregar)
+            })
+    
+        } else if (valoresArreglo === null || valoresArreglo === undefined){
+            valoresSintetizados = []
+        }
+        
+        this.entornoActual.set(nombreArreglo, { tipo: tipoArreglo  + "[]" , valor: valoresSintetizados })
+
+
+    }
+    /** 
+    * @type {BaseVisitor['visitAccesoValorArreglo']}
+    */
+    visitAccesoValorArreglo(node){
+        const nombreArreglo = node.id
+        const posicionArreglo = node.posicion.accept(this)
+
+        const valorArreglo = this.entornoActual.getValorArreglo(nombreArreglo, posicionArreglo)
+        return valorArreglo
+    }
+    /** 
+    * @type {BaseVisitor['visitAsignacionValorArreglo']}
+    */
+    visitAsignacionValorArreglo(node){
+        const nombreArreglo = node.id
+        const posicionArreglo = node.posicion.accept(this)
+        const nuevoValor = node.asignacion.accept(this)
+
+        this.entornoActual.asignarValorArreglo(nombreArreglo, posicionArreglo, nuevoValor)
+        return nuevoValor
+
+    }   
+    /** 
+    * @type {BaseVisitor['visitDeclaracionArregloReservado']}
+    */
+    visitDeclaracionArregloReservado(node){
+        const tipoArreglo = node.tipo
+        const nombreArreglo = node.id
+        const espaciosArreglo = node.cantidad.accept(this)
+        let valoresSintetizados = []
+
+    
+        switch(tipoArreglo){
+            
+            case "int":
+                for(let i = 0; i<espaciosArreglo; i++){
+                    valoresSintetizados.push(0)
+                }
+                break
+            case "float":
+                for(let i = 0; i<espaciosArreglo; i++){
+                    valoresSintetizados.push(0.0)
+                }
+                break
+            case "string":
+                for(let i = 0; i<espaciosArreglo; i++){
+                    valoresSintetizados.push("")
+                }
+                break
+            case "boolean":
+                for(let i = 0; i<espaciosArreglo; i++){
+                    valoresSintetizados.push(false)
+                }
+                break
+            case "char":
+                for(let i = 0; i<espaciosArreglo; i++){
+                    valoresSintetizados.push('\u0000')
+                }
+                break
+            case "struct":
+                for(let i = 0; i<espaciosArreglo; i++){
+                    valoresSintetizados.push(null)
+                }
+                break
+            default:
+                throw new Error("Tipo de arreglo desconocido: " + tipoArreglo);
+        }
+        
+        this.entornoActual.set(nombreArreglo, { tipo: tipoArreglo  + "[]" , valor: valoresSintetizados })
+    }
+    //Funcion Auxiliar para los Arreglos
+    validarTipoArreglo(tipoArreglo, valor) {
+        switch (tipoArreglo) {
+            case "int":
+                return Number.isInteger(valor);
+            case "float":
+                return typeof valor === 'number' && !Number.isInteger(valor);
+            case "string":
+                return typeof valor === 'string';
+            case "boolean":
+                return typeof valor === 'boolean';
+            case "char":
+                return typeof valor === 'string' && valor.length === 1;
+            default:
+                throw new Error("Tipo de arreglo desconocido: " + tipoArreglo);
+        }
     }
 }

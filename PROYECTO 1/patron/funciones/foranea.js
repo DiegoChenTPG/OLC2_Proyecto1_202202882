@@ -35,7 +35,8 @@ export class FuncionForanea extends Invocable{
         const entornoNuevo = new Entorno(this.clousure)
         
         this.nodo.parametros.forEach((parametro, i) => {
-            entornoNuevo.set(parametro, args[i])
+            console.log(args[i] + " se supone invocar")
+            entornoNuevo.set(parametro, {tipo: "var", valor: args[i]})
         })
 
         const entornoAntesDeLaLlamada = interprete.entornoActual
@@ -47,7 +48,9 @@ export class FuncionForanea extends Invocable{
             interprete.entornoActual = entornoAntesDeLaLlamada
             
             if(error instanceof ReturnException){
+                console.log(error.valor + "REVISANDO EL RETURN")
                 return error.valor
+                
             }
 
             //MANEJAR EL RESTO DE SENTENCIAS DE CONTROL

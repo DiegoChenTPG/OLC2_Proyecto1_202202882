@@ -22,7 +22,11 @@
       'declaracionStruct': nodos.DeclaracionStruct,
       'instancia': nodos.Instancia,
       'get': nodos.Get,
-      'set': nodos.Set
+      'set': nodos.Set,
+      'declaracionArreglo': nodos.DeclaracionArreglo,
+      'accesoValorArreglo': nodos.AccesoValorArreglo,
+      'asignacionValorArreglo': nodos.AsignacionValorArreglo,
+      'declaracionArregloReservado': nodos.DeclaracionArregloReservado
     }
     const nodo = new tipos[tipoNodo](propiedades)
     nodo.location = location()
@@ -35,17 +39,25 @@ programa = _ dcl:Declaracion* _ { return dcl }
 
 Declaracion = dcl:Declaracion_Variable _ ";" _ { return dcl }
             / dclF:Declaracion_Funcion _ {return dclF} 
-            / dclS: Declaracion_Struct _ {return dclS}
+            / dclS:Declaracion_Struct _ {return dclS}
+            / dclA:Declaracion_Arreglo _ ";" _ {return dclA } 
             / stmt:Sentencias _ { return stmt }
 
 
 Declaracion_Variable = "var" _ id:ID _ "=" _ exp:Expresion _ { return crearNodo('declaracionVariable', { tipo: "var", id, exp }) }
                     / tipo:Tipo _ id:ID _ exp:("=" _ exp:Expresion {return exp})? _ { return crearNodo('declaracionVariable', { tipo, id, exp: exp || null }) }
 
+Declaracion_Arreglo = tipo:Tipo _ "[" _ "]" _ id:ID _ "=" _ "{" _ valors:ValoresArreglo? _ "}" {return crearNodo('declaracionArreglo', {tipo, id, valores: valors || []})}
+                    / tipo:Tipo _ "[" _ "]" _ id:ID _ "=" _ "new" _ tipo2:Tipo _ "[" cantidad:Expresion "]" {return crearNodo('declaracionArregloReservado', {tipo, id, cantidad})}
+                    / tipo:Tipo _ "[" _ "]" _ id:ID _ "=" _ arreglo:Expresion {return crearNodo('declaracionArreglo', {tipo, id, valores: arreglo || []})}
+                    
+
+ValoresArreglo = val:Expresion _ valors:(","_ vals:Expresion {return vals})* {return [val, ...valors]}
 
 Declaracion_Funcion = "void" _ id:ID _ "(" _ parametros:Parametros? _ ")" _ bloque:Bloque {return crearNodo('declaracionFuncion', {id, parametros: parametros || [], bloque})}
 
 Parametros = id:ID _ parametros:(","_ ids:ID {return ids})* {return [id, ...parametros]}
+
 
 
 Declaracion_Struct =  "struct" _ id:ID _ "{" _ declaraciones:Cuerpo_Struct* _ "}" {return crearNodo('declaracionStruct', {id, declaraciones}) }
@@ -68,6 +80,8 @@ Sentencias = "System.out.println(" _ exp:Expresion _ ")" _ ";" _ { return crearN
 
 Bloque = "{" _ dcls:Declaracion* _ "}" {return crearNodo('bloque', {dcls})}
 
+Propiedad = id:ID _ ":" _ valor:Expresion {return {id, valor}} 
+
 Expresion = Asignacion
 
 
@@ -76,6 +90,10 @@ Asignacion = asignado:Llamada _ "=" _ asignacion:Asignacion
 
     if (asignado instanceof nodos.AccesoVariable) {
       return crearNodo('asignacion', { id: asignado.id, asignacion })
+    }
+
+    if (asignado instanceof nodos.AccesoValorArreglo){
+      return crearNodo('asignacionValorArreglo', {id:asignado.id, posicion: asignado.posicion, asignacion})
     }
 
     if (!(asignado instanceof nodos.Get)) {
@@ -185,9 +203,10 @@ Llamada = objetivoInicial:Valor _
 return op
 }
 
+Argumentos = arg:Expresion _ args:("," _ exp:Expresion { return exp })* { return [arg, ...args]}
 
-
-Argumentos = arg:Expresion _ args:("," _ exp:Expresion {return exp})* {return [arg, ...args]}
+Propiedades = arg:Propiedad _ args:("," _ exp:Propiedad {return exp})* {return [arg, ...args.map(exp => ({ id: exp.id, valor: exp.valor }))]}
+//{return [arg, ...args]}
 
 // { return{ tipo: "numero", valor: parseFloat(text(), 10) } }
 Valor = DECIMAL {return crearNodo('numero', { valor: parseFloat(text()) })} 
@@ -196,8 +215,11 @@ Valor = DECIMAL {return crearNodo('numero', { valor: parseFloat(text()) })}
   / CHAR {return crearNodo('numero', { valor: String(text().slice(1, -1)) /* Se quitan las comillas dobles */})}
   / ("true"/"false") {return crearNodo('numero', { valor: JSON.parse(text()) /* el JSON.parse se usa para convertir los string a su valor bool*/})}
   / "(" _ exp:Expresion _ ")" { return crearNodo('agrupacion', { exp }) }
-  / "new" _ id:ID _ "(" _ argumentos:Argumentos? _ ")" {return crearNodo('instancia', {id, args:argumentos || []})}
+  / id:ID _ "{" _ propiedades:Propiedades? _ "}" {return crearNodo('instancia', {id, args:propiedades || []})}
+  / id:ID _ "[" _ posicion:Expresion _ "]" {return crearNodo('accesoValorArreglo', {id, posicion})}
   / id:ID { return crearNodo('accesoVariable', { id }) }
+
+
 
 
 

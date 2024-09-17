@@ -69,6 +69,18 @@
 
  * @typedef {import('./nodos').Set} Set
 
+
+ * @typedef {import('./nodos').DeclaracionArreglo} DeclaracionArreglo
+
+
+ * @typedef {import('./nodos').AccesoValorArreglo} AccesoValorArreglo
+
+
+ * @typedef {import('./nodos').AsignacionValorArreglo} AsignacionValorArreglo
+
+
+ * @typedef {import('./nodos').DeclaracionArregloReservado} DeclaracionArregloReservado
+
  */
 
 
@@ -283,6 +295,42 @@ export class BaseVisitor {
      */
     visitSet(node) {
         throw new Error('Metodo visitSet no implementado');
+    }
+    
+
+    /**
+     * @param {DeclaracionArreglo} node
+     * @returns {any}
+     */
+    visitDeclaracionArreglo(node) {
+        throw new Error('Metodo visitDeclaracionArreglo no implementado');
+    }
+    
+
+    /**
+     * @param {AccesoValorArreglo} node
+     * @returns {any}
+     */
+    visitAccesoValorArreglo(node) {
+        throw new Error('Metodo visitAccesoValorArreglo no implementado');
+    }
+    
+
+    /**
+     * @param {AsignacionValorArreglo} node
+     * @returns {any}
+     */
+    visitAsignacionValorArreglo(node) {
+        throw new Error('Metodo visitAsignacionValorArreglo no implementado');
+    }
+    
+
+    /**
+     * @param {DeclaracionArregloReservado} node
+     * @returns {any}
+     */
+    visitDeclaracionArregloReservado(node) {
+        throw new Error('Metodo visitDeclaracionArregloReservado no implementado');
     }
     
 }
