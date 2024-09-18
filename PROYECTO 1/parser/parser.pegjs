@@ -14,6 +14,7 @@
       'if': nodos.If,
       'while': nodos.While,
       'for': nodos.For,
+      'switch': nodos.Switch,
       'break': nodos.Break,
       'continue': nodos.Continue,
       'return': nodos.Return,
@@ -81,8 +82,9 @@ Sentencias = "System.out.println(" _ imp:Expresion _ impre:("," _ imps:Expresion
       _ "else" _ sentenciasFalse:Sentencias {return sentenciasFalse})? {return crearNodo('if', {condicion, sentenciasTrue, sentenciasFalse})}
     / "while" _ "(" _ condicion:Expresion _ ")" _ sentencias:Sentencias {return crearNodo('while', {condicion, sentencias})}
     / "for" _ "(" _ inicializacion:(Declaracion_Variable / Expresion) _ ";" _ condicion:Expresion _ ";" _ actualizacion:Expresion ")" _ sentencias:Sentencias {return crearNodo("for", {inicializacion, condicion, actualizacion, sentencias})}
-    / "switch"
-    / "case"
+    / "switch" _ "(" _ exp_inicial:Expresion ")" _ "{" _
+      "case" _ exp:Expresion _ ":" _ stmt:Sentencias _ cases:("case" _ exps:Expresion _ ":" _ stmts:Sentencias {return {exp: exps, stmt: stmts}})* _ 
+      dflt:("default:" _ stmtD:Sentencias {return stmtD})? _ "}" {return crearNodo('switch', {inicial: exp_inicial, casos:[{exp, stmt}, ...cases], c_default: dflt})}
     / "break" _ ";" {return crearNodo('break')}
     / "continue" _ ";" {return crearNodo('continue')}
     / "return" _ exp:Expresion? _ ";" {return crearNodo('return', {exp})}

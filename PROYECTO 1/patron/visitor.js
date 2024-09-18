@@ -108,6 +108,9 @@
 
  * @typedef {import('./nodos').FuncLength} FuncLength
 
+
+ * @typedef {import('./nodos').Switch} Switch
+
  */
 
 
@@ -439,6 +442,15 @@ export class BaseVisitor {
      */
     visitFuncLength(node) {
         throw new Error('Metodo visitFuncLength no implementado');
+    }
+    
+
+    /**
+     * @param {Switch} node
+     * @returns {any}
+     */
+    visitSwitch(node) {
+        throw new Error('Metodo visitSwitch no implementado');
     }
     
 }

@@ -1136,4 +1136,45 @@ export class FuncLength extends Expresion {
     }
 }
     
-export default { Expresion, OperacionBinaria, OperacionUnaria, Agrupacion, Numero, DeclaracionVariable, AccesoVariable, Print, ExpresionStmt, Asignacion, Bloque, If, While, For, Break, Continue, Return, Llamada, DeclaracionFuncion, DeclaracionStruct, Instancia, Get, Set, DeclaracionArreglo, AccesoValorArreglo, AsignacionValorArreglo, DeclaracionArregloReservado, FuncParseInt, FuncParseFloat, FuncToString, FuncToLowerCase, FuncToUpperCase, FuncTypeOf, FuncIndexOf, FuncJoin, FuncLength }
+export class Switch extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {Expresion} options.inicial valor a comparar
+ * @param {Expresion[]} options.casos Cases del switch
+ * @param {Expresion | undefined} options.c_default Default del switch
+    */
+    constructor({ inicial, casos, c_default }) {
+        super();
+        
+        /**
+         * valor a comparar
+         * @type {Expresion}
+        */
+        this.inicial = inicial;
+
+
+        /**
+         * Cases del switch
+         * @type {Expresion[]}
+        */
+        this.casos = casos;
+
+
+        /**
+         * Default del switch
+         * @type {Expresion | undefined}
+        */
+        this.c_default = c_default;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitSwitch(this);
+    }
+}
+    
+export default { Expresion, OperacionBinaria, OperacionUnaria, Agrupacion, Numero, DeclaracionVariable, AccesoVariable, Print, ExpresionStmt, Asignacion, Bloque, If, While, For, Break, Continue, Return, Llamada, DeclaracionFuncion, DeclaracionStruct, Instancia, Get, Set, DeclaracionArreglo, AccesoValorArreglo, AsignacionValorArreglo, DeclaracionArregloReservado, FuncParseInt, FuncParseFloat, FuncToString, FuncToLowerCase, FuncToUpperCase, FuncTypeOf, FuncIndexOf, FuncJoin, FuncLength, Switch }

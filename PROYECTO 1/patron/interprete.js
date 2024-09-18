@@ -671,6 +671,36 @@ export class InterpreterVisitor extends BaseVisitor{
         return Arreglo.length
     }
 
+    /** 
+    * @type {BaseVisitor['visitSwitch']}
+    */
+    visitSwitch(node){
+        let valorInicial = node.inicial.accept(this)
+        let casoEjecutado = false
+
+        // Iterar sobre los casos del switch
+        for (let i = 0; i < node.casos.length; i++) {
+            console.log(i + " iteracion")
+            const caso = node.casos[i].exp.accept(this)
+            console.log(caso + " casos")
+            
+            if (caso === valorInicial) {
+                // Si el valor del case coincide con el valor inicial, ejecutar las sentencias
+                node.casos[i].stmt.accept(this) // Ejecutar el bloque de sentencias del case
+                casoEjecutado = true
+                break; // Rompemos después de ejecutar el case que corresponde
+            }
+        }
+    
+        // Si no se ha ejecutado ningún caso, ejecutamos el bloque default si existe
+        if (!casoEjecutado && node.c_default) {
+            console.log("estamos aqui")
+            node.c_default.accept(this) // Ejecutar el bloque de default
+            
+        }
+
+    }
+
 
 
     //Funcion Auxiliar para los Arreglos
