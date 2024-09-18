@@ -26,7 +26,16 @@
       'declaracionArreglo': nodos.DeclaracionArreglo,
       'accesoValorArreglo': nodos.AccesoValorArreglo,
       'asignacionValorArreglo': nodos.AsignacionValorArreglo,
-      'declaracionArregloReservado': nodos.DeclaracionArregloReservado
+      'declaracionArregloReservado': nodos.DeclaracionArregloReservado,
+      'funcParseInt': nodos.FuncParseInt,
+      'funcParseFloat': nodos.FuncParseFloat,
+      'funcToString': nodos.FuncToString,
+      'funcToLowerCase': nodos.FuncToLowerCase,
+      'funcToUpperCase': nodos.FuncToUpperCase,
+      'funcTypeOf': nodos.FuncTypeOf,
+      'funcIndexOf': nodos.FuncIndexOf,
+      'funcJoin':nodos.FuncJoin,
+      'funcLength':nodos.FuncLength
     }
     const nodo = new tipos[tipoNodo](propiedades)
     nodo.location = location()
@@ -66,7 +75,7 @@ Cuerpo_Struct = dcl:Declaracion_Variable _ ";" _ {return dcl}
 
 
 // AQUI EN LOS STATEMENT IRIAN INSTRUCCIONES (ESTRUCTURAS DE CONTROL) 
-Sentencias = "System.out.println(" _ exp:Expresion _ ")" _ ";" _ { return crearNodo('print', { exp }) }
+Sentencias = "System.out.println(" _ imp:Expresion _ impre:("," _ imps:Expresion {return imps})* ")" _ ";" _ { return crearNodo('print', { exp: [imp, ...impre] }) }
     / Bloque
     / "if" _ "(" _ condicion:Expresion _ ")" _ sentenciasTrue:Sentencias sentenciasFalse:(
       _ "else" _ sentenciasFalse:Sentencias {return sentenciasFalse})? {return crearNodo('if', {condicion, sentenciasTrue, sentenciasFalse})}
@@ -214,8 +223,17 @@ Valor = DECIMAL {return crearNodo('numero', { valor: parseFloat(text()) })}
   / CHAR {return crearNodo('numero', { valor: String(text().slice(1, -1)) /* Se quitan las comillas dobles */})}
   / ("true"/"false") {return crearNodo('numero', { valor: JSON.parse(text()) /* el JSON.parse se usa para convertir los string a su valor bool*/})}
   / "(" _ exp:Expresion _ ")" { return crearNodo('agrupacion', { exp }) }
+  / "parseInt" _ "(" _ exp:Expresion _ ")" {return crearNodo('funcParseInt', { exp })}
+  / "parseFloat" _ "(" _ exp:Expresion _ ")" {return crearNodo('funcParseFloat', { exp })}
+  / "toString" _ "(" _ exp:Expresion _ ")" {return crearNodo('funcToString', { exp })}
+  / "toLowerCase" _ "(" _ exp:Expresion _ ")" {return crearNodo('funcToLowerCase', { exp })}
+  / "toUpperCase" _ "(" _ exp:Expresion _ ")" {return crearNodo('funcToUpperCase', { exp })}
+  / "typeof" _ exp:Expresion {return crearNodo('funcTypeOf', { exp })}
   / id:ID _ "{" _ propiedades:Propiedades? _ "}" {return crearNodo('instancia', {id, args:propiedades || []})}
   / id:ID _ "[" _ posicion:Expresion _ "]" {return crearNodo('accesoValorArreglo', {id, posicion})}
+  / id:ID ".indexOf" _ "(" _ exp:Expresion ")" {return crearNodo('funcIndexOf', {id, exp})}
+  / id:ID ".join()" {return crearNodo('funcJoin', {id})}
+  / id:ID ".length" {return crearNodo('funcLength', {id})}
   / id:ID { return crearNodo('accesoVariable', { id }) }
 
 
@@ -231,9 +249,42 @@ Tipo = "int" {return 'int'}
 
 DECIMAL =  [0-9]+(.[0-9]+)        
 N_ENTERO = [0-9]+ 
-ID = [_a-zA-Z_][_a-zA-Z0-9_]* { return text() }
+ID = !Reservada [_a-zA-Z_][_a-zA-Z0-9_]* { return text() }
 TEXTO = '"'[^\"]*'"'
 CHAR = "'" [^\"]? "'"
+
+
+
+Reservada
+  = "var"
+  / "int"
+  / "float"
+  / "string"
+  / "boolean"
+  / "char"
+  / "true"
+  / "false"
+  / "if"
+  / "else"
+  / "while"
+  / "for"
+  / "return"
+  / "void"
+  / "struct"
+  / "new"
+  / "break"
+  / "continue"
+  / "System.out.println"
+  / "parseInt"
+  / "parseFloat"
+  / "toString"
+  / "toUpperCase"
+  / "toLowerCase"
+  / "typeof"
+  / "indexOf"
+  / "join"
+  / "length"
+
 
 _ = ([ \t\n\r] / Comentario)*
 

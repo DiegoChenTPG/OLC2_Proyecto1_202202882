@@ -137,8 +137,14 @@ export class InterpreterVisitor extends BaseVisitor{
     * @type {BaseVisitor['visitPrint']}
     */  
     visitPrint(node){
-        const valor = node.exp.accept(this)
-        this.salida += valor + "\n"
+        const valor = node.exp
+
+        valor.forEach(element => {
+            let impresiones = element.accept(this)
+            this.salida += impresiones + " "
+        })
+        this.salida += "\n"
+        
 
     }
 
@@ -531,6 +537,125 @@ export class InterpreterVisitor extends BaseVisitor{
         
         this.entornoActual.set(nombreArreglo, { tipo: tipoArreglo  + "[]" , valor: valoresSintetizados })
     }
+
+
+
+    /** 
+    * @type {BaseVisitor['visitFuncParseInt']}
+    */
+    visitFuncParseInt(node){
+        let valor = node.exp.accept(this)
+        return parseInt(valor)
+    }
+
+    /** 
+    * @type {BaseVisitor['visitFuncParseFloat']}
+    */
+    visitFuncParseFloat(node){
+        let valor = node.exp.accept(this)
+        return parseFloat(valor)
+    }
+    /** 
+    * @type {BaseVisitor['visitFuncToString']}
+    */
+    visitFuncToString(node){
+        let valor = node.exp.accept(this)
+        return valor.toString()
+    }
+    /** 
+    * @type {BaseVisitor['visitFuncToLowerCase']}
+    */
+    visitFuncToLowerCase(node){
+        let valor = node.exp.accept(this)
+        return valor.toLowerCase()
+    }
+    /** 
+    * @type {BaseVisitor['visitFuncToUpperCase']}
+    */
+    visitFuncToUpperCase(node){
+        let valor = node.exp.accept(this)
+        return valor.toUpperCase()
+    }
+
+    /** 
+    * @type {BaseVisitor['visitFuncTypeOf']}
+    */
+    visitFuncTypeOf(node){
+        let valor = node.exp.accept(this)
+        let retorno = typeof valor
+        console.log(retorno)
+        if(retorno === "number"){
+            if (Number.isInteger(valor)) {
+                return "int";
+            } else {
+                return "float";
+            }
+        }
+
+        if(retorno === "string"){
+            if (valor.length === 1) {
+                return "char";
+            } else {
+                return "string";
+            }
+        }
+        
+        return retorno
+    }
+
+    /** 
+    * @type {BaseVisitor['visitFuncIndexOf']}
+    */
+    visitFuncIndexOf(node){
+        const nArreglo = node.id
+        const valor = node.exp.accept(this)
+        const Arreglo = this.entornoActual.get(nArreglo)
+        if(!Array.isArray(Arreglo)){
+            throw new Error("Esta funcion debe ser usada con un Arreglo");
+        }
+        
+        return Arreglo.indexOf(valor)
+    }
+    /** 
+    * @type {BaseVisitor['visitFuncJoin']}
+    */
+    visitFuncJoin(node){
+        const nArreglo = node.id
+        const Arreglo = this.entornoActual.get(nArreglo)
+        let retorno = ""
+        if(!Array.isArray(Arreglo)){
+            throw new Error("Esta funcion debe ser usada con un Arreglo");
+        }
+
+        for (let i = 0; i < Arreglo.length; i++) {
+            
+            retorno += Arreglo[i]
+            console.log(Arreglo[i] + "SE AGREGO")
+            if (i < Arreglo.length - 1) {
+                retorno += ', '
+            }
+        }
+
+        return retorno
+    }
+
+
+
+    /** 
+    * @type {BaseVisitor['visitFuncLength']}
+    */
+    visitFuncLength(node){
+        const nArreglo = node.id
+        const Arreglo = this.entornoActual.get(nArreglo)
+        if(!Array.isArray(Arreglo)){
+            throw new Error("Esta funcion debe ser usada con un Arreglo");
+        }
+
+        return Arreglo.length
+    }
+
+
+
     //Funcion Auxiliar para los Arreglos
     validarTipoArreglo(tipoArreglo, valor) {
         switch (tipoArreglo) {

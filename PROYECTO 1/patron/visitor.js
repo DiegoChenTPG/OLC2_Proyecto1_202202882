@@ -81,6 +81,33 @@
 
  * @typedef {import('./nodos').DeclaracionArregloReservado} DeclaracionArregloReservado
 
+
+ * @typedef {import('./nodos').FuncParseInt} FuncParseInt
+
+
+ * @typedef {import('./nodos').FuncParseFloat} FuncParseFloat
+
+
+ * @typedef {import('./nodos').FuncToString} FuncToString
+
+
+ * @typedef {import('./nodos').FuncToLowerCase} FuncToLowerCase
+
+
+ * @typedef {import('./nodos').FuncToUpperCase} FuncToUpperCase
+
+
+ * @typedef {import('./nodos').FuncTypeOf} FuncTypeOf
+
+
+ * @typedef {import('./nodos').FuncIndexOf} FuncIndexOf
+
+
+ * @typedef {import('./nodos').FuncJoin} FuncJoin
+
+
+ * @typedef {import('./nodos').FuncLength} FuncLength
+
  */
 
 
@@ -331,6 +358,87 @@ export class BaseVisitor {
      */
     visitDeclaracionArregloReservado(node) {
         throw new Error('Metodo visitDeclaracionArregloReservado no implementado');
+    }
+    
+
+    /**
+     * @param {FuncParseInt} node
+     * @returns {any}
+     */
+    visitFuncParseInt(node) {
+        throw new Error('Metodo visitFuncParseInt no implementado');
+    }
+    
+
+    /**
+     * @param {FuncParseFloat} node
+     * @returns {any}
+     */
+    visitFuncParseFloat(node) {
+        throw new Error('Metodo visitFuncParseFloat no implementado');
+    }
+    
+
+    /**
+     * @param {FuncToString} node
+     * @returns {any}
+     */
+    visitFuncToString(node) {
+        throw new Error('Metodo visitFuncToString no implementado');
+    }
+    
+
+    /**
+     * @param {FuncToLowerCase} node
+     * @returns {any}
+     */
+    visitFuncToLowerCase(node) {
+        throw new Error('Metodo visitFuncToLowerCase no implementado');
+    }
+    
+
+    /**
+     * @param {FuncToUpperCase} node
+     * @returns {any}
+     */
+    visitFuncToUpperCase(node) {
+        throw new Error('Metodo visitFuncToUpperCase no implementado');
+    }
+    
+
+    /**
+     * @param {FuncTypeOf} node
+     * @returns {any}
+     */
+    visitFuncTypeOf(node) {
+        throw new Error('Metodo visitFuncTypeOf no implementado');
+    }
+    
+
+    /**
+     * @param {FuncIndexOf} node
+     * @returns {any}
+     */
+    visitFuncIndexOf(node) {
+        throw new Error('Metodo visitFuncIndexOf no implementado');
+    }
+    
+
+    /**
+     * @param {FuncJoin} node
+     * @returns {any}
+     */
+    visitFuncJoin(node) {
+        throw new Error('Metodo visitFuncJoin no implementado');
+    }
+    
+
+    /**
+     * @param {FuncLength} node
+     * @returns {any}
+     */
+    visitFuncLength(node) {
+        throw new Error('Metodo visitFuncLength no implementado');
     }
     
 }

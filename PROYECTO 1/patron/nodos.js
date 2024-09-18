@@ -235,14 +235,14 @@ export class Print extends Expresion {
 
     /**
     * @param {Object} options
-    * @param {Expresion} options.exp Expresion a imprimir
+    * @param {Expresion[]} options.exp Expresion a imprimir
     */
     constructor({ exp }) {
         super();
         
         /**
          * Expresion a imprimir
-         * @type {Expresion}
+         * @type {Expresion[]}
         */
         this.exp = exp;
 
@@ -895,4 +895,237 @@ export class DeclaracionArregloReservado extends Expresion {
     }
 }
     
-export default { Expresion, OperacionBinaria, OperacionUnaria, Agrupacion, Numero, DeclaracionVariable, AccesoVariable, Print, ExpresionStmt, Asignacion, Bloque, If, While, For, Break, Continue, Return, Llamada, DeclaracionFuncion, DeclaracionStruct, Instancia, Get, Set, DeclaracionArreglo, AccesoValorArreglo, AsignacionValorArreglo, DeclaracionArregloReservado }
+export class FuncParseInt extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {Expresion} options.exp Expresion a parsear
+    */
+    constructor({ exp }) {
+        super();
+        
+        /**
+         * Expresion a parsear
+         * @type {Expresion}
+        */
+        this.exp = exp;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncParseInt(this);
+    }
+}
+    
+export class FuncParseFloat extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {Expresion} options.exp Expresion a parsear
+    */
+    constructor({ exp }) {
+        super();
+        
+        /**
+         * Expresion a parsear
+         * @type {Expresion}
+        */
+        this.exp = exp;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncParseFloat(this);
+    }
+}
+    
+export class FuncToString extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {Expresion} options.exp Expresion a parsear
+    */
+    constructor({ exp }) {
+        super();
+        
+        /**
+         * Expresion a parsear
+         * @type {Expresion}
+        */
+        this.exp = exp;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncToString(this);
+    }
+}
+    
+export class FuncToLowerCase extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {Expresion} options.exp Expresion a trabajar
+    */
+    constructor({ exp }) {
+        super();
+        
+        /**
+         * Expresion a trabajar
+         * @type {Expresion}
+        */
+        this.exp = exp;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncToLowerCase(this);
+    }
+}
+    
+export class FuncToUpperCase extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {Expresion} options.exp Expresion a trabajar
+    */
+    constructor({ exp }) {
+        super();
+        
+        /**
+         * Expresion a trabajar
+         * @type {Expresion}
+        */
+        this.exp = exp;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncToUpperCase(this);
+    }
+}
+    
+export class FuncTypeOf extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {Expresion} options.exp Expresion a trabajar
+    */
+    constructor({ exp }) {
+        super();
+        
+        /**
+         * Expresion a trabajar
+         * @type {Expresion}
+        */
+        this.exp = exp;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncTypeOf(this);
+    }
+}
+    
+export class FuncIndexOf extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {string} options.id identificador del arreglo
+ * @param {Expresion} options.exp Valor para obtener el indice
+    */
+    constructor({ id, exp }) {
+        super();
+        
+        /**
+         * identificador del arreglo
+         * @type {string}
+        */
+        this.id = id;
+
+
+        /**
+         * Valor para obtener el indice
+         * @type {Expresion}
+        */
+        this.exp = exp;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncIndexOf(this);
+    }
+}
+    
+export class FuncJoin extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {string} options.id identificador del arreglo
+    */
+    constructor({ id }) {
+        super();
+        
+        /**
+         * identificador del arreglo
+         * @type {string}
+        */
+        this.id = id;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncJoin(this);
+    }
+}
+    
+export class FuncLength extends Expresion {
+
+    /**
+    * @param {Object} options
+    * @param {string} options.id identificador del arreglo
+    */
+    constructor({ id }) {
+        super();
+        
+        /**
+         * identificador del arreglo
+         * @type {string}
+        */
+        this.id = id;
+
+    }
+
+    /**
+     * @param {BaseVisitor} visitor
+     */
+    accept(visitor) {
+        return visitor.visitFuncLength(this);
+    }
+}
+    
+export default { Expresion, OperacionBinaria, OperacionUnaria, Agrupacion, Numero, DeclaracionVariable, AccesoVariable, Print, ExpresionStmt, Asignacion, Bloque, If, While, For, Break, Continue, Return, Llamada, DeclaracionFuncion, DeclaracionStruct, Instancia, Get, Set, DeclaracionArreglo, AccesoValorArreglo, AsignacionValorArreglo, DeclaracionArregloReservado, FuncParseInt, FuncParseFloat, FuncToString, FuncToLowerCase, FuncToUpperCase, FuncTypeOf, FuncIndexOf, FuncJoin, FuncLength }
