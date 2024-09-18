@@ -287,8 +287,9 @@ export class Asignacion extends Expresion {
     * @param {Object} options
     * @param {string} options.id Identificador de la variable
  * @param {Expresion} options.asignacion Expresion a asignar
+ * @param {string} options.op Operador de asignacion a realizar
     */
-    constructor({ id, asignacion }) {
+    constructor({ id, asignacion, op }) {
         super();
         
         /**
@@ -303,6 +304,13 @@ export class Asignacion extends Expresion {
          * @type {Expresion}
         */
         this.asignacion = asignacion;
+
+
+        /**
+         * Operador de asignacion a realizar
+         * @type {string}
+        */
+        this.op = op;
 
     }
 

@@ -81,6 +81,8 @@ Sentencias = "System.out.println(" _ imp:Expresion _ impre:("," _ imps:Expresion
       _ "else" _ sentenciasFalse:Sentencias {return sentenciasFalse})? {return crearNodo('if', {condicion, sentenciasTrue, sentenciasFalse})}
     / "while" _ "(" _ condicion:Expresion _ ")" _ sentencias:Sentencias {return crearNodo('while', {condicion, sentencias})}
     / "for" _ "(" _ inicializacion:(Declaracion_Variable / Expresion) _ ";" _ condicion:Expresion _ ";" _ actualizacion:Expresion ")" _ sentencias:Sentencias {return crearNodo("for", {inicializacion, condicion, actualizacion, sentencias})}
+    / "switch"
+    / "case"
     / "break" _ ";" {return crearNodo('break')}
     / "continue" _ ";" {return crearNodo('continue')}
     / "return" _ exp:Expresion? _ ";" {return crearNodo('return', {exp})}
@@ -93,11 +95,11 @@ Propiedad = id:ID _ ":" _ valor:Expresion {return {id, valor}}
 Expresion = Asignacion
 
 
-Asignacion = asignado:Llamada _ "=" _ asignacion:Asignacion
+Asignacion = asignado:Llamada _ op:("=" / "+=" / "-=") _ asignacion:Asignacion
   {
 
     if (asignado instanceof nodos.AccesoVariable) {
-      return crearNodo('asignacion', { id: asignado.id, asignacion })
+      return crearNodo('asignacion', { id: asignado.id, asignacion, op })
     }
 
     if (asignado instanceof nodos.AccesoValorArreglo){
@@ -284,6 +286,8 @@ Reservada
   / "indexOf"
   / "join"
   / "length"
+  / "switch"
+  / "case"
 
 
 _ = ([ \t\n\r] / Comentario)*

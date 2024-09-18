@@ -162,7 +162,24 @@ export class InterpreterVisitor extends BaseVisitor{
 
     visitAsignacion(node) {
         const valorVariableNuevo = node.asignacion.accept(this)
-        this.entornoActual.asignar(node.id, valorVariableNuevo)
+        switch (node.op) {
+            case "=":
+                this.entornoActual.asignar(node.id, valorVariableNuevo)
+                break
+            case "+=":
+                const valorAnterior1 = this.entornoActual.get(node.id)
+                const suma = valorVariableNuevo + valorAnterior1
+                this.entornoActual.asignar(node.id, suma)
+                break
+            case "-=":
+                const valorAnterior2 = this.entornoActual.get(node.id)
+                const resta = valorVariableNuevo - valorAnterior2
+                this.entornoActual.asignar(node.id, resta)
+                break
+            default:
+                break
+        }
+        
         return valorVariableNuevo
     }
 
