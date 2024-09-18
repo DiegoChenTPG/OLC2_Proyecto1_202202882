@@ -1,4 +1,5 @@
 import { Invocable } from "../patron/funciones/invocable.js"
+import { Instancia } from "../patron/nodos.js"
 import { Struct } from "../patron/structs/struct.js"
 
 export class Entorno {
@@ -215,6 +216,7 @@ export class Entorno {
             case "function":
                 return valor instanceof Invocable
             case "instance":
+                //return valor instanceof Instancia
                 return true
             default:
                 //return true
@@ -231,6 +233,8 @@ export class Entorno {
     
     // ESTA SIRVE PARA CUANDO SE DECLARE UN: var algo = "hola", se determine su tipo gracias al valor que trae acompañado 
     inferirTipo(valor) {
+        console.log(typeof(valor))
+        console.log(valor)
         if (Number.isInteger(valor)) {
             return "int";
         } else if (typeof valor === 'number') {
@@ -241,7 +245,18 @@ export class Entorno {
             return "boolean";
         } else if (valor instanceof Struct) {
             return "struct";
-        } else {
+        }else if (valor instanceof Object) {
+            //return valor.struct.nombre
+            return "instance"
+        } else if (Array.isArray(valor)) {
+            // Inferimos el tipo base del arreglo
+            if (valor.length > 0) {
+                return this.inferirTipo(valor[0]) + "[]";
+            } else {
+                throw new Error("No se puede inferir el tipo de un arreglo vacío.");
+            }
+        } 
+        else {
             throw new Error("No se pudo inferir el tipo del valor proporcionado.");
         }
     }

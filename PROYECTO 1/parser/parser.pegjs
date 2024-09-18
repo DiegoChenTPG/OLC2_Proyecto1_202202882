@@ -39,7 +39,7 @@ programa = _ dcl:Declaracion* _ { return dcl }
 
 Declaracion = dcl:Declaracion_Variable _ ";" _ { return dcl }
             / dclF:Declaracion_Funcion _ {return dclF} 
-            / dclS:Declaracion_Struct _ {return dclS}
+            / dclS:Declaracion_Struct _ ";" _ {return dclS}
             / dclA:Declaracion_Arreglo _ ";" _ {return dclA } 
             / stmt:Sentencias _ { return stmt }
 
@@ -50,7 +50,6 @@ Declaracion_Variable = "var" _ id:ID _ "=" _ exp:Expresion _ { return crearNodo(
 Declaracion_Arreglo = tipo:Tipo _ "[" _ "]" _ id:ID _ "=" _ "{" _ valors:ValoresArreglo? _ "}" {return crearNodo('declaracionArreglo', {tipo, id, valores: valors || []})}
                     / tipo:Tipo _ "[" _ "]" _ id:ID _ "=" _ "new" _ tipo2:Tipo _ "[" cantidad:Expresion "]" {return crearNodo('declaracionArregloReservado', {tipo, id, cantidad})}
                     / tipo:Tipo _ "[" _ "]" _ id:ID _ "=" _ arreglo:Expresion {return crearNodo('declaracionArreglo', {tipo, id, valores: arreglo || []})}
-                    
 
 ValoresArreglo = val:Expresion _ valors:(","_ vals:Expresion {return vals})* {return [val, ...valors]}
 

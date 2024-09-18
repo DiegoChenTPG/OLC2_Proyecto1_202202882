@@ -459,8 +459,8 @@ export class InterpreterVisitor extends BaseVisitor{
         
         this.entornoActual.set(nombreArreglo, { tipo: tipoArreglo  + "[]" , valor: valoresSintetizados })
 
+    }   
 
-    }
     /** 
     * @type {BaseVisitor['visitAccesoValorArreglo']}
     */

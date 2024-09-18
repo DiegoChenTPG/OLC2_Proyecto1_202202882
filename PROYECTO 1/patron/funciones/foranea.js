@@ -35,8 +35,18 @@ export class FuncionForanea extends Invocable{
         const entornoNuevo = new Entorno(this.clousure)
         
         this.nodo.parametros.forEach((parametro, i) => {
-            console.log(args[i] + " se supone invocar")
-            entornoNuevo.set(parametro, {tipo: "var", valor: args[i]})
+            const argumento_s = args[i]
+
+            if(Array.isArray(argumento_s)) {
+                const copiaArreglo = argumento_s
+                copiaArreglo.forEach(element => {
+                    console.log(element)
+                })
+                entornoNuevo.set(parametro, {tipo: "var", valor: copiaArreglo})
+            }else{
+                entornoNuevo.set(parametro, {tipo: "var", valor: args[i]})
+            }
+            
         })
 
         const entornoAntesDeLaLlamada = interprete.entornoActual

@@ -651,8 +651,21 @@ return op
         s1 = peg$parseDeclaracion_Struct();
         if (s1 !== peg$FAILED) {
           s2 = peg$parse_();
-          peg$savedPos = s0;
-          s0 = peg$f3(s1);
+          if (input.charCodeAt(peg$currPos) === 59) {
+            s3 = peg$c0;
+            peg$currPos++;
+          } else {
+            s3 = peg$FAILED;
+            if (peg$silentFails === 0) { peg$fail(peg$e0); }
+          }
+          if (s3 !== peg$FAILED) {
+            s4 = peg$parse_();
+            peg$savedPos = s0;
+            s0 = peg$f3(s1);
+          } else {
+            peg$currPos = s0;
+            s0 = peg$FAILED;
+          }
         } else {
           peg$currPos = s0;
           s0 = peg$FAILED;
